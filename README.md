@@ -7,14 +7,22 @@
 ```phpregexp
 composer require smbear/payeezy
 ```
-```phpregexp
 
-```
 
 ## Using this package
 
-Information about using this package
+```phpregexp
+php artisan vendor:publish --provider=Smbear\Payeezy\Providers\PayeezyServiceProvider
+```
+
+```phpregexp
+use Smbear\Payeezy\Facades\Payeezy;
+```
 
 ## Contributing
 
-Information about contributing to this package.
+* token 初始化token
+* integration 集成3ds
+* payment 支付
+* jwt 生成jwt的token
+* valid 验证jwt 是否有效
