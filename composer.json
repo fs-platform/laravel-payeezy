@@ -12,7 +12,7 @@
       "role": "Developer"
     }
   ],
-  "homepage": "https://github.com/smbear/payeezy",
+  "homepage": "https://github.com/fs-platform/laravel-payeezy",
   "type": "library",
   "time": "2021-6-25",
   "minimum-stability": "dev",
