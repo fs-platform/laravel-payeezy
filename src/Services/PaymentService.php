@@ -4,8 +4,7 @@ namespace Smbear\Payeezy\Services;
 
 use Smbear\Payeezy\Enums\PayeezyEnum;
 use Smbear\Payeezy\Traits\PayeezyOrder;
-use Smbear\Payeezy\Events\RecordLogEvent;
-use Smbear\Payeezy\Events\StorePayStatusEvent;
+use Smbear\Payeezy\Exceptions\ApiException;
 
 class PaymentService
 {
@@ -17,19 +16,9 @@ class PaymentService
     public $config;
 
     /**
-     * @var string $local
-     */
-    public $local;
-
-    /**
      * @var array $order 订单信息
      */
     public $order;
-
-    /**
-     * @var string body 信息
-     */
-    public $payload;
 
     /**
      * @var array $headers 头信息
@@ -37,9 +26,9 @@ class PaymentService
     public $headers;
 
     /**
-     * @var string $currencyCode 货币国家
+     * @var string body 信息
      */
-    public $currencyCode;
+    public $payload;
 
     /**
      * @var string $paymentType 付款类型
@@ -47,14 +36,19 @@ class PaymentService
     public $paymentType;
 
     /**
-     * @var string $customerIpAddress 客户请求的ip地址
+     * @var string $currencyCode 货币国家
      */
-    public $customerIpAddress;
+    public $currencyCode;
 
     /**
      * @var bool $isEuUnionCountry 是否是欧盟国家
      */
     public $isEuUnionCountry;
+
+    /**
+     * @var string $customerIpAddress 客户请求的ip地址
+     */
+    public $customerIpAddress;
 
     /**
      * @Notes:设置headers信息
@@ -226,16 +220,15 @@ class PaymentService
      * @param array $order
      * @param string $paymentType
      * @param string $currencyCode
-     * @param string $local
      * @Author: smile
      * @Date: 2021/6/15
      * @Time: 20:12
      * @return array
+     * @throws ApiException
      */
-    public function apiPayment(array $config,array $order,string $paymentType,string $currencyCode,string $local): array
+    public function apiPayment(array $config,array $order,string $paymentType,string $currencyCode): array
     {
         $this->order            = $order;
-        $this->local            = $local;
         $this->config           = $config;
         $this->paymentType      = $paymentType;
         $this->currencyCode     = $currencyCode;
@@ -253,30 +246,17 @@ class PaymentService
                 $body = $response->json();
 
                 if (empty($body)){
-                    event(new RecordLogEvent([
-                        'order_id'  => $this->order['ordersId'],
-                        'type'      => 3,
-                        'exception' => 'body 不存在或格式错误：'.(string) $body
-                    ]));
-
-                    return payeezy_return_error(payeezy_get_trans('fs_system_busy',$this->local),[]);
+                    throw new ApiException('支付 返回数据异常'.(string) $response);
                 }
 
-                //存储状态信息
-                event(new StorePayStatusEvent($body,$this->order['ordersId']));
+                $result = $this->resolveResult($body);
 
-                return $this->resolveResult($body);
+                return compact('result','body');
             }
 
             $response->throw();
         }catch (\Exception $exception){
-            event(new RecordLogEvent([
-                'order_id'  => $this->order['ordersId'],
-                'type'      => 3,
-                'exception' => $exception
-            ]));
-
-            return payeezy_return_error(payeezy_get_trans('fs_system_busy',$this->local),[]);
+            throw new ApiException($exception->getMessage());
         }
     }
 
@@ -287,27 +267,28 @@ class PaymentService
      * @param array $order
      * @param string $paymentType
      * @param string $currencyCode
-     * @param string $local
      * @param string $customerIpAddress
      * @param string $isEuUnionCountry
      * @return array
      * @Author: smile
      * @Date: 2021/6/21
      * @Time: 14:39
+     * @throws ApiException
      */
-    public function apiIntegration(array $order,array $config,string $paymentType,string $currencyCode,string $local,string $customerIpAddress,string $isEuUnionCountry): array
+    public function apiIntegration(array $order,array $config,string $paymentType,string $currencyCode,string $customerIpAddress,string $isEuUnionCountry): array
     {
-        $this->config            = $config;
         $this->order             = $order;
-        $this->local             = $local;
+        $this->config            = $config;
         $this->paymentType       = $paymentType;
         $this->currencyCode      = $currencyCode;
-        $this->customerIpAddress = $customerIpAddress;
         $this->isEuUnionCountry  = $isEuUnionCountry;
+        $this->customerIpAddress = $customerIpAddress;
+
+        $this->setZeroDollarAuth($currencyCode,$isEuUnionCountry);
 
         //判断是否能开启3ds认证
         if ($this->zeroDollarAuth == true){
-            $message = payeezy_get_trans('currency_is_not_3ds',$this->local);
+            $message = payeezy_get_trans('currency_is_not_3ds',PayeezyEnum::LOCAL);
 
             return payeezy_return_error($message);
         }
@@ -325,13 +306,7 @@ class PaymentService
                 $body = $response->json();
 
                 if (empty($body)){
-                    event(new RecordLogEvent([
-                        'order_id'  => $this->order['ordersId'],
-                        'type'      => 2,
-                        'exception' => '3ds 返回的 body 不存在或格式错误'
-                    ]));
-
-                    return payeezy_return_error(payeezy_get_trans('fs_system_busy',$this->local),[]);
+                    throw new ApiException('3ds集成 返回数据异常'.(string) $response);
                 }
 
                 return payeezy_return_success('success',$body['response']);
@@ -339,13 +314,7 @@ class PaymentService
 
             $response->throw();
         }catch (\Exception $exception){
-            event(new RecordLogEvent([
-                'order_id'  => $this->order['ordersId'],
-                'type'      => 2,
-                'exception' => $exception
-            ]));
-
-            return payeezy_return_error(payeezy_get_trans('fs_system_busy',$this->local),[]);
+            throw new ApiException($exception->getMessage());
         }
     }
 
@@ -360,6 +329,8 @@ class PaymentService
      */
     public function resolveResult(array $result) : array
     {
+        $result['transaction_status'] = 'admin';
+
         if ($result['transaction_status'] != 'approved'){
             $message = 'payeezy error';
 
@@ -367,19 +338,19 @@ class PaymentService
                 $message = $result['Error']['message'];
             } else {
                 if (!in_array(intval($result['bank_resp_code']),PayeezyEnum::BANK_SUCCESS_STATUS)){
-                    $message = payeezy_get_trans('bank_'.$result['bank_resp_code'],$this->local);
+                    $message = payeezy_get_trans('bank_'.$result['bank_resp_code'],PayeezyEnum::LOCAL);
 
                     $message = $message ?: $result['bank_message'];
                 }
 
                 if ($result['bank_message'] != 'Approved'){
-                    $message = payeezy_get_trans('bank_'.$result['bank_resp_code'],$this->local);
+                    $message = payeezy_get_trans('bank_'.$result['bank_resp_code'],PayeezyEnum::LOCAL);
 
                     $message = $message ?: $result['bank_message'];
                 }
 
                 if ($result['gateway_resp_code'] != '00'){
-                    $message = payeezy_get_trans('gateway_'.$result['gateway_resp_code'],$this->local);
+                    $message = payeezy_get_trans('gateway_'.$result['gateway_resp_code'],PayeezyEnum::LOCAL);
 
                     $message = $message ?: $result['gateway_message'];
                 }

@@ -1,6 +1,7 @@
 <?php
 
 namespace Smbear\Payeezy\Traits;
+
 use Illuminate\Support\Facades\Http;
 
 trait PayeezyOrder

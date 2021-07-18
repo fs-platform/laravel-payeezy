@@ -3,13 +3,13 @@
 namespace Smbear\Payeezy;
 
 use Illuminate\Support\Facades\Log;
-use Smbear\Payeezy\Enums\PayeezyEnum;
 use Smbear\Payeezy\Traits\PayeezyConfig;
 use Smbear\Payeezy\Services\TokenService;
 use Smbear\Payeezy\Services\PaymentService;
 use Smbear\Payeezy\Services\JwtTokenService;
 use Smbear\Payeezy\Exceptions\OrderException;
 use Smbear\Payeezy\Exceptions\MethodException;
+use Smbear\Payeezy\Exceptions\ParameterException;
 
 class Payeezy
 {
@@ -26,29 +26,19 @@ class Payeezy
     public $order;
 
     /**
-     * @var string currencyCode 货币类型
-     */
-    public $currencyCode;
-
-    /**
      * @var string $paymentType 付款类型
      */
     public $paymentType;
 
     /**
-     * @var bool $isEuUnionCountry 是否是欧盟国家
-     */
-    public $isEuUnionCountry;
-
-    /**
-     * @var string $customerIpAddress 客户请求的ip地址
-     */
-    public $customerIpAddress;
-
-    /**
      * @var object TokenService token的服务
      */
     public $tokenService;
+
+    /**
+     * @var string currencyCode 货币类型
+     */
+    public $currencyCode;
 
     /**
      * @var object $jwtTokenService jwt token的服务
@@ -60,9 +50,18 @@ class Payeezy
      */
     public $paymentService;
 
+    /**
+     * @var bool $isEuUnionCountry 是否是欧盟国家
+     */
+    public $isEuUnionCountry;
+
+    /**
+     * @var string $customerIpAddress 客户请求的ip地址
+     */
+    public $customerIpAddress;
+
     public function __construct()
     {
-        //初始化环境
         $this->setEnvironment();
 
         $this->tokenService = new TokenService();
@@ -80,14 +79,15 @@ class Payeezy
      * @Author: smile
      * @Date: 2021/6/10
      * @Time: 17:31
+     * @throws ParameterException
      */
-    public function setLocal(string $local = PayeezyEnum::LOCAL) : self
+    public function setLocal(string $local) : self
     {
-        if (is_null($this->local)){
-            $local = $local ?: PayeezyEnum::LOCAL;
-
-            $this->local = $local;
+        if (empty($local)){
+            throw new ParameterException(__FUNCTION__.' 参数异常');
         }
+
+        $this->local = $local;
 
         return $this;
     }
@@ -100,14 +100,15 @@ class Payeezy
      * @Date: 2021/6/15
      * @Time: 20:17
      * @return $this
+     * @throws ParameterException
      */
-    public function setCurrencyCode(string $currencyCode = PayeezyEnum::CURRENCY_CODE) : self
+    public function setCurrencyCode(string $currencyCode) : self
     {
-        if (is_null($this->currencyCode)) {
-            $currencyCode = $currencyCode ?: PayeezyEnum::CURRENCY_CODE;
-
-            $this->currencyCode = $currencyCode;
+        if (empty($currencyCode)){
+            throw new ParameterException(__FUNCTION__.' 参数异常');
         }
+
+        $this->currencyCode = $currencyCode;
 
         return $this;
     }
@@ -121,13 +122,9 @@ class Payeezy
      * @Date: 2021/6/22
      * @Time: 17:38
      */
-    public function setEuUnionCountry(bool $isEuUnionCountry = PayeezyEnum::IS_EN_UNION_COUNTRY) : self
+    public function setEuUnionCountry(bool $isEuUnionCountry) : self
     {
-        if (is_null($this->isEuUnionCountry)){
-            $isEuUnionCountry = $isEuUnionCountry ?: PayeezyEnum::IS_EN_UNION_COUNTRY;
-
-            $this->isEuUnionCountry = $isEuUnionCountry;
-        }
+        $this->isEuUnionCountry = $isEuUnionCountry;
 
         return $this;
     }
@@ -140,14 +137,15 @@ class Payeezy
      * @Author: smile
      * @Date: 2021/6/16
      * @Time: 10:41
+     * @throws ParameterException
      */
-    public function setOrder(array $order = PayeezyEnum::ORDER) : self
+    public function setOrder(array $order) : self
     {
-        if (!empty($order)){
-            $order = $order ?: PayeezyEnum::ORDER;
-
-            $this->order = $order;
+        if (empty($order)){
+            throw new ParameterException(__FUNCTION__.' 参数异常');
         }
+
+        $this->order = $order;
 
         return $this;
     }
@@ -160,14 +158,15 @@ class Payeezy
      * @Author: smile
      * @Date: 2021/6/16
      * @Time: 20:10
+     * @throws ParameterException
      */
-    public function setPaymentType(string $paymentType = PayeezyEnum::PAYMENT_TYPE) : self
+    public function setPaymentType(string $paymentType) : self
     {
-        if (is_null($this->paymentType)){
-            $paymentType = $paymentType ?: PayeezyEnum::PAYMENT_TYPE;
-
-            $this->paymentType = $paymentType;
+        if (empty($paymentType)){
+            throw new ParameterException(__FUNCTION__.' 参数异常');
         }
+
+        $this->paymentType = $paymentType;
 
         return $this;
     }
@@ -180,14 +179,15 @@ class Payeezy
      * @Author: smile
      * @Date: 2021/6/20
      * @Time: 15:31
+     * @throws ParameterException
      */
-    public function setCustomerIpAddress(string $ipAddress = PayeezyEnum::CUSTOMER_ADDRESS) : self
+    public function setCustomerIpAddress(string $ipAddress) : self
     {
-        if (is_null($this->customerIpAddress)){
-            $ipAddress = $ipAddress ?: PayeezyEnum::CUSTOMER_ADDRESS;
-
-            $this->customerIpAddress = $ipAddress;
+        if (empty($ipAddress)){
+            throw new ParameterException(__FUNCTION__.' 参数异常');
         }
+
+        $this->customerIpAddress = $ipAddress;
 
         return $this;
     }
@@ -205,9 +205,6 @@ class Payeezy
     {
         foreach ($parameters as $method => $attribute){
             if (is_null($this->$attribute)){
-                Log::channel(config('payeezy.channel') ?: 'local')
-                    ->info($method. ' 方法未被调用');
-
                 throw new MethodException($method .' is not call');
             }
         }
@@ -230,7 +227,6 @@ class Payeezy
         }
 
         array_map(function ($item) use ($order){
-            //判断字符串中是否存在.获取到嵌套值
             if (strpos($item,'.') !== false){
                 $array = $order;
 
@@ -248,9 +244,6 @@ class Payeezy
             }
 
             if (empty($option)){
-                Log::channel(config('payeezy.channel') ?: 'local')
-                    ->info('order 参数中'.$item. ' 没有或为空');
-
                 throw new OrderException('order '.$item . ' is not defined or error');
             }
 
@@ -269,27 +262,21 @@ class Payeezy
      */
     public function token()
     {
-        $this->setConfig([
+        $this->getConfig([
             'apiKey',
-            'paymentSecret',
-            'merchantToken',
             'taToken',
-            'tokenUrl'
+            'tokenUrl',
+            'paymentSecret',
+            'merchantToken'
         ]);
 
         $this->checkMethod([
-            'setLocal'          => 'local',
             'setCurrencyCode'   => 'currencyCode',
-            'setOrder'          => 'order',
             'setEuUnionCountry' => 'isEuUnionCountry'
         ]);
 
-        $this->checkOrder([
-            'ordersId'
-        ],$this->order);
-
         return $this->tokenService
-            ->apiToken($this->order,$this->config,$this->local,$this->currencyCode,$this->isEuUnionCountry);
+            ->apiToken($this->config,$this->currencyCode,$this->isEuUnionCountry);
     }
 
     /**
@@ -297,14 +284,14 @@ class Payeezy
      *
      * @throws Exceptions\ConfigException
      * @throws MethodException
-     * @throws OrderException
+     * @throws OrderException|Exceptions\ApiException
      * @Author: smile
      * @Date: 2021/6/20
      * @Time: 18:45
      */
     public function integration(): array
     {
-        $this->setConfig([
+        $this->getConfig([
             'apiKey',
             'apiSecret',
             'merchantToken',
@@ -312,12 +299,11 @@ class Payeezy
         ]);
 
         $this->checkMethod([
-            'setLocal'             => 'local',
-            'setCurrencyCode'      => 'currencyCode',
             'setOrder'             => 'order',
             'setPaymentType'       => 'paymentType',
-            'setCustomerIpAddress' => 'customerIpAddress',
-            'setEuUnionCountry'    => 'isEuUnionCountry'
+            'setCurrencyCode'      => 'currencyCode',
+            'setEuUnionCountry'    => 'isEuUnionCountry',
+            'setCustomerIpAddress' => 'customerIpAddress'
         ]);
 
         $this->checkOrder([
@@ -336,7 +322,7 @@ class Payeezy
         ],$this->order);
 
         return $this->paymentService
-            ->apiIntegration($this->order,$this->config,$this->paymentType,$this->currencyCode,$this->local,$this->customerIpAddress,$this->isEuUnionCountry);
+            ->apiIntegration($this->order,$this->config,$this->paymentType,$this->currencyCode,$this->customerIpAddress,$this->isEuUnionCountry);
     }
 
     /**
@@ -347,11 +333,11 @@ class Payeezy
      * @Time: 19:09
      * @throws Exceptions\ConfigException
      * @throws MethodException
-     * @throws OrderException
+     * @throws OrderException|Exceptions\ApiException
      */
     public function payment(): array
     {
-        $this->setConfig([
+        $this->getConfig([
             'apiKey',
             'apiSecret',
             'merchantToken',
@@ -359,10 +345,9 @@ class Payeezy
         ]);
 
         $this->checkMethod([
-            'setLocal'          => 'local',
-            'setCurrencyCode'   => 'currencyCode',
             'setOrder'          => 'order',
-            'setPaymentType'    => 'paymentType'
+            'setPaymentType'    => 'paymentType',
+            'setCurrencyCode'   => 'currencyCode',
         ]);
 
         $checkOrderParameter = [
@@ -388,7 +373,7 @@ class Payeezy
         $this->checkOrder($checkOrderParameter,$this->order);
 
         return $this->paymentService
-            ->apiPayment($this->config,$this->order,$this->paymentType,$this->currencyCode,$this->local);
+            ->apiPayment($this->config,$this->order,$this->paymentType,$this->currencyCode);
     }
 
     /**
@@ -397,21 +382,20 @@ class Payeezy
      * @return array
      * @throws Exceptions\ConfigException
      * @throws MethodException
-     * @throws OrderException
+     * @throws OrderException|Exceptions\ApiException
      * @Author: smile
      * @Date: 2021/6/22
      * @Time: 15:20
      */
     public function jwt() : array
     {
-        $this->setConfig([
+        $this->getConfig([
             'jwt_apiKey',
             'jwt_apiId',
             'jwt_unitId'
         ]);
 
         $this->checkMethod([
-            'setLocal' => 'local',
             'setOrder' => 'order',
         ]);
 
@@ -423,7 +407,7 @@ class Payeezy
         ],$this->order);
 
         return $this->jwtTokenService
-            ->setParams($this->config,$this->order,$this->local)
+            ->setParams($this->config,$this->order)
             ->setTime()
             ->jwt();
     }
@@ -435,19 +419,18 @@ class Payeezy
      * @return array
      * @throws Exceptions\ConfigException
      * @throws MethodException
-     * @throws OrderException
+     * @throws OrderException|Exceptions\ApiException
      * @Author: smile
      * @Date: 2021/6/23
      * @Time: 10:14
      */
     public function valid(string $token) : array
     {
-        $this->setConfig([
+        $this->getConfig([
             'jwt_apiKey',
         ]);
 
         $this->checkMethod([
-            'setLocal'  => 'local',
             'setOrder'  => 'order',
         ]);
 
@@ -456,7 +439,7 @@ class Payeezy
         ],$this->order);
 
         return $this->jwtTokenService
-            ->setParams($this->config,$this->order,$this->local)
+            ->setParams($this->config,$this->order)
             ->valid($token);
     }
 }

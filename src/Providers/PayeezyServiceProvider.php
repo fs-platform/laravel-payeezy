@@ -24,12 +24,6 @@ class PayeezyServiceProvider extends ServiceProvider
          $this->publishes([
              __DIR__.'/../../resources/lang' => resource_path('lang/vendor/payeezy'),
          ], 'translations');
-
-         $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
-
-         $this->publishes([
-             __DIR__.'/../../database/migrations/' => database_path('migrations')
-         ], 'migrations');
     }
 
     /**
@@ -42,8 +36,6 @@ class PayeezyServiceProvider extends ServiceProvider
         $this->app->singleton('payeezy',function (){
             return new Payeezy();
         });
-
-        $this->app->register(EventServiceProvider::class);
 
         $this->mergeConfigFrom(
             __DIR__.'/../../config/payeezy.php', 'payeezy'

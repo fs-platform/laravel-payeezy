@@ -2,7 +2,6 @@
 
 namespace Smbear\Payeezy\Traits;
 
-use Illuminate\Support\Facades\Log;
 use Smbear\Payeezy\Exceptions\ConfigException;
 
 trait PayeezyConfig
@@ -39,17 +38,14 @@ trait PayeezyConfig
      * @Date: 2021/6/8
      * @Time: 18:53
      */
-    public function setConfig(array $dependencies)
+    public function getConfig(array $dependencies)
     {
         if (is_null($this->config)){
             $environment = $this->environment;
 
             array_map(function ($item) use ($environment) {
                 if (empty(config('payeezy.'.$environment.'.'.$item))){
-                    Log::channel(config('payeezy.channel') ?: 'local')
-                        ->info('config payeezy 文件中 ' .$environment .'.'.$item.' 参数为空');
-
-                    throw new ConfigException($environment .'.'.$item.' 参数为空');
+                    throw new ConfigException('config '.$environment .'.'.$item.' 参数为空');
                 }
             }, $dependencies);
 

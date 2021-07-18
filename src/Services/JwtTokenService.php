@@ -6,7 +6,7 @@ use Firebase\JWT\JWT;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Signer\Key;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
-use Smbear\Payeezy\Events\RecordLogEvent;
+use Smbear\Payeezy\Exceptions\ApiException;
 
 class JwtTokenService
 {
@@ -14,11 +14,6 @@ class JwtTokenService
      * @var int $time 当前的时间戳
      */
     public $time;
-
-    /**
-     * @var string $local 语言
-     */
-    public $local;
 
     /**
      * @var array $order 订单数据
@@ -29,7 +24,6 @@ class JwtTokenService
      * @var array $config 配置文件
      */
     public $config;
-
 
     /**
      * @Notes:设置当前的时间戳
@@ -80,13 +74,12 @@ class JwtTokenService
      *
      * @param array $order
      * @param array $config
-     * @param string $local
      * @Author: smile
      * @Date: 2021/6/22
      * @Time: 19:46
      * @return $this
      */
-    public function setParams(array $config,array $order,string $local) : self
+    public function setParams(array $config,array $order) : self
     {
         if (is_null($this->order)){
             $this->order = $order;
@@ -94,10 +87,6 @@ class JwtTokenService
 
         if (is_null($this->config)){
             $this->config = $config;
-        }
-
-        if (is_null($this->local)){
-            $this->local = $local;
         }
         
         return $this;
@@ -110,6 +99,7 @@ class JwtTokenService
      * @Author: smile
      * @Date: 2021/6/22
      * @Time: 19:39
+     * @throws ApiException
      */
     public function jwt(): array
     {
@@ -131,25 +121,13 @@ class JwtTokenService
             $token = (string) $token;
 
             if (empty($token)){
-                event(new RecordLogEvent([
-                    'order_id'  => $this->order['ordersId'],
-                    'type'      => 4,
-                    'exception' => '生成的jwt token 为空'
-                ]));
-
-                return payeezy_return_error(payeezy_get_trans('fs_system_busy',$this->local),[]);
+                throw new ApiException('jwt 生成的token 数据为空');
             }
 
             return payeezy_return_success('success',compact('token'));
 
         }catch (\Exception $exception){
-            event(new RecordLogEvent([
-                'order_id'  => $this->order['ordersId'],
-                'type'      => 4,
-                'exception' => $exception
-            ]));
-
-            return payeezy_return_error(payeezy_get_trans('fs_system_busy',$this->local),[]);
+            throw new ApiException('生成jwt 异常'.$exception->getMessage());
         }
     }
 
@@ -161,6 +139,7 @@ class JwtTokenService
      * @Author: smile
      * @Date: 2021/6/22
      * @Time: 19:42
+     * @throws ApiException
      */
     public function valid(string $token) : array
     {
@@ -168,34 +147,16 @@ class JwtTokenService
             $decoded = JWT::decode($token,$this->config['jwt_apiKey'],['HS256']);
 
             if (!is_object($decoded)){
-                event(new RecordLogEvent([
-                    'order_id'  => $this->order['ordersId'],
-                    'type'      => 5,
-                    'exception' => 'jwt token error'
-                ]));
-
-                return payeezy_return_error(payeezy_get_trans('fs_system_busy',$this->local),[]);
+                throw new ApiException('验证jwt jwt token error');
             }
 
             if (!isset($decoded->ReferenceId) || $decoded->ReferenceId != $this->order['ordersId']){
-                event(new RecordLogEvent([
-                    'order_id'  => $this->order['ordersId'],
-                    'type'      => 5,
-                    'exception' => 'jwt token ReferenceId error'
-                ]));
-
-                return payeezy_return_error(payeezy_get_trans('fs_system_busy',$this->local),[]);
+                return payeezy_return_error('error');
             }
 
             return payeezy_return_success('success');
         }catch (\Exception $exception){
-            event(new RecordLogEvent([
-                'order_id'  => $this->order['ordersId'],
-                'type'      => 5,
-                'exception' => $exception
-            ]));
-
-            return payeezy_return_error(payeezy_get_trans('fs_system_busy',$this->local),[]);
+            throw new ApiException('验证jwt异常 '.$exception->getMessage());
         }
     }
 }

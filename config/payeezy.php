@@ -9,13 +9,7 @@ return [
 
     'fill_able_currencies' => env('PAYEEZY_FILL_ABLE_CURRENCIES',[]),
 
-    'model' => [
-        'log_model'    => env('PAYEEZY_LOG_MODEL',''),
-        'token_model'  => env('PAYEEZY_TOKEN_MODEL',''),
-        'status_model' => env('PAYEEZY_STATUS_MODEL',''),
-    ],
-
-    '3ds_status' => env('3DS_STATUS',true),
+    '3ds_status'           => env('3DS_STATUS',true),
 
     'sandbox' => [
         'apiKey'          => env('PAYEEZY_SANDBOX_APIKEY',''),

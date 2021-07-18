@@ -3,21 +3,11 @@
 namespace Smbear\Payeezy\Services;
 
 use Smbear\Payeezy\Traits\PayeezyOrder;
-use Smbear\Payeezy\Events\RecordLogEvent;
+use Smbear\Payeezy\Exceptions\ApiException;
 
 class TokenService
 {
     use PayeezyOrder;
-
-    /**
-     * @var string $local 本地语言
-     */
-    public $local;
-
-    /**
-     * @var array $order order信息
-     */
-    public $order;
 
     /**
      * @var array $config 配置文件
@@ -25,14 +15,14 @@ class TokenService
     public $config;
 
     /**
-     * @var string body 信息
-     */
-    public $payload;
-
-    /**
      * @var array $headers 头信息
      */
     public $headers;
+
+    /**
+     * @var string body 信息
+     */
+    public $payload;
 
     /**
      * @var string $currencyCode 货币类型
@@ -99,10 +89,8 @@ class TokenService
     /**
      * @Notes:api token 请求payeezy token数据
      *
-     * @param array $order
      * @param string $currencyCode
      * @param array $config
-     * @param string $local
      * @param bool $isEuUnionCountry
      * @return array
      * @throws \Exception
@@ -110,11 +98,9 @@ class TokenService
      * @Date: 2021/6/10
      * @Time: 17:12
      */
-    public function apiToken(array $order,array $config,string $local,string $currencyCode,bool $isEuUnionCountry) : array
+    public function apiToken(array $config,string $currencyCode,bool $isEuUnionCountry) : array
     {
-        $this->order             = $order;
         $this->config            = $config;
-        $this->local             = $local;
         $this->currencyCode      = $currencyCode;
         $this->isEuUnionCountry  = $isEuUnionCountry;
 
@@ -128,30 +114,25 @@ class TokenService
                     'body'    => $this->payload
                 ]);
 
-            if($response->successful()){
-                $clientToken = $response->header('Client-Token');
+            if($response->successful()) {
+
+                $clientToken     = $response->header('Client-Token');
                 $publicKeyBase64 = $response->body('publicKeyBase64');
 
                 if (empty($clientToken)){
-                    $error = 'Client-Token is not defined';
+                    $error = 'token 初始化 Client-Token is not defined';
                 }
 
                 if (empty($publicKeyBase64)){
-                    $error = 'publicKeyBase64 is not defined';
+                    $error = 'token 初始化 publicKeyBase64 is not defined';
                 }
 
                 if ($response->header('Nonce') != $this->signature['nonce']){
-                    $error = 'nonce validation failed for nonce ' . $response->header('Nonce');
+                    $error = 'token 初始化 nonce validation failed for nonce ' . $response->header('Nonce');
                 }
 
                 if (isset($error)){
-                    event(new RecordLogEvent([
-                        'order_id'  => $this->order['ordersId'],
-                        'type'      => 1,
-                        'exception' => $error
-                    ]));
-
-                    return payeezy_return_error(payeezy_get_trans('fs_system_busy',$this->local),[]);
+                    throw new ApiException($error);
                 }
 
                 return payeezy_return_success('success',array_merge([
@@ -163,13 +144,7 @@ class TokenService
 
             $response->throw();
         }catch (\Exception $exception){
-            event(new RecordLogEvent([
-                'order_id'  => $this->order['ordersId'],
-                'type'      => 1,
-                'exception' => $exception
-            ]));
-
-            return payeezy_return_error(payeezy_get_trans('fs_system_busy',$this->local),[]);
+            throw new ApiException($exception->getMessage());
         }
     }
 }
