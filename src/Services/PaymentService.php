@@ -329,8 +329,6 @@ class PaymentService
      */
     public function resolveResult(array $result) : array
     {
-        $result['transaction_status'] = 'admin';
-
         if ($result['transaction_status'] != 'approved'){
             $message = 'payeezy error';
 
