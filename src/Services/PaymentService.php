@@ -287,10 +287,8 @@ class PaymentService
         $this->setZeroDollarAuth($currencyCode,$isEuUnionCountry);
 
         //判断是否能开启3ds认证
-        if ($this->zeroDollarAuth == true){
-            $message = payeezy_get_trans('currency_is_not_3ds',PayeezyEnum::LOCAL);
-
-            return payeezy_return_error($message);
+        if ($this->zeroDollarAuth != true){
+            throw new ApiException('3ds集成 支付的货币类型不满足使用');
         }
 
         try{
