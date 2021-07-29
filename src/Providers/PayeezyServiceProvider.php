@@ -17,13 +17,6 @@ class PayeezyServiceProvider extends ServiceProvider
          $this->publishes([
              __DIR__.'/../../config/payeezy.php' => config_path('payeezy.php'),
          ], 'config');
-
-
-         $this->loadTranslationsFrom(__DIR__.'/../../resources/lang', 'payeezy');
-
-         $this->publishes([
-             __DIR__.'/../../resources/lang' => resource_path('lang/vendor/payeezy'),
-         ], 'translations');
     }
 
     /**

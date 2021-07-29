@@ -18,7 +18,7 @@ trait PayeezyOrder
 
     /**
      * @Notes:设置是否开启3ds认证
-     *
+     * true 表示开启3ds认证 false 表示不开启3ds认证
      * @param string $currencyCode
      * @param bool $isEuUnionCountry
      * @return $this

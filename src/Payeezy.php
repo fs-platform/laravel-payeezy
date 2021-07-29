@@ -41,14 +41,14 @@ class Payeezy
     public $currencyCode;
 
     /**
-     * @var object $jwtTokenService jwt token的服务
-     */
-    public $jwtTokenService;
-
-    /**
      * @var object PaymentService 支付的服务
      */
     public $paymentService;
+
+    /**
+     * @var object $jwtTokenService jwt token的服务
+     */
+    public $jwtTokenService;
 
     /**
      * @var bool $isEuUnionCountry 是否是欧盟国家
@@ -266,8 +266,8 @@ class Payeezy
             'apiKey',
             'taToken',
             'tokenUrl',
+            'merchantToken',
             'paymentSecret',
-            'merchantToken'
         ]);
 
         $this->checkMethod([
@@ -367,7 +367,8 @@ class Payeezy
         }
 
         if ($this->paymentType == '3DS'){
-            array_push($checkOrderParameter,'3ds');
+            array_push($checkOrderParameter,'3ds.ExtendedData.CAVV');
+            array_push($checkOrderParameter,'ds_transaction_id');
         };
 
         $this->checkOrder($checkOrderParameter,$this->order);

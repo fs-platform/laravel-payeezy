@@ -21,9 +21,3 @@ if (!function_exists('payeezy_return_error')){
         ];
     }
 }
-
-if (!function_exists('payeezy_get_trans')){
-    function payeezy_get_trans(string $key,string $local){
-        return trans('payeezy::payeezy.'.$key,[],$local);
-    }
-}

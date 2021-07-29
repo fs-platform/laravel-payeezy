@@ -115,7 +115,6 @@ class TokenService
                 ]);
 
             if($response->successful()) {
-
                 $clientToken     = $response->header('Client-Token');
                 $publicKeyBase64 = $response->body('publicKeyBase64');
 
