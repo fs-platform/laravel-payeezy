@@ -203,13 +203,13 @@ class PaymentService
                 break;
             case 'integration':
                 $payload = $this->getIntegrationPayload();
-                $this->payload = json_encode($payload);
+                $this->payload = json_encode($payload,JSON_UNESCAPED_UNICODE);
                 return $this;
             default:
                 $payload = $this->get3DXPayload();
         }
 
-        $this->payload = json_encode($payload, JSON_FORCE_OBJECT);
+        $this->payload = json_encode($payload,JSON_UNESCAPED_UNICODE+JSON_FORCE_OBJECT);
 
         return $this;
     }
