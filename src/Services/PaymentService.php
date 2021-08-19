@@ -88,7 +88,7 @@ class PaymentService
             'merchant_ref'     => $this->order['ordersNumber'],
             'transaction_type' => 'purchase',
             'method'           => '3DS',
-            'amount'           => $this->order['amount'],
+            'amount'           => strval($this->order['amount']),
             'currency_code'    => $this->currencyCode,
             'eci_indicator'    => $this->order['3ds']['ExtendedData']['ECIFlag'],
             '3DS'              => [
@@ -126,7 +126,7 @@ class PaymentService
             'merchant_ref'     => $this->order['ordersNumber'],
             'transaction_type' => 'purchase',
             'method'           => 'token',
-            'amount'           => $this->order['amount'],
+            'amount'           => strval($this->order['amount']),
             'currency_code'    => $this->currencyCode,
             'token'            => [
                 'token_type' => 'FDToken',
@@ -154,7 +154,7 @@ class PaymentService
         return [
             'method'                   => 'token',
             'merchant_ref'             => $this->order['ordersNumber'],
-            'amount'                   => $this->order['amount'],
+            'amount'                   => strval($this->order['amount']),
             'currency_code'            => $this->currencyCode,
             'df_reference_id'          => $this->order['ordersId'],
             'device_channel'           => 'Browser',
