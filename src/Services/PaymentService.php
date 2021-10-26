@@ -90,14 +90,14 @@ class PaymentService
             'method'           => '3DS',
             'amount'           => strval($this->order['amount']),
             'currency_code'    => $this->currencyCode,
-            'eci_indicator'    => $this->order['3ds']['ExtendedData']['ECIFlag'],
+            'eci_indicator'    => $this->order['3ds']['ExtendedData']['ECIFlag'] ?? '',
             '3DS'              => [
                 'type'                            => 'D',
                 'program_protocol'                => '2',
                 'directory_server_transaction_id' => $this->order['directory_server_transaction_id'],
                 'cardholder_name'                 => $this->order['card']['cardHolderName'],
                 'exp_date'                        => $this->order['card']['exp_date'],
-                'cavv'                            => $this->order['3ds']['ExtendedData']['CAVV']
+                'cavv'                            => $this->order['3ds']['ExtendedData']['CAVV'] ?? ''
             ],
             'token'            => [
                 'token_type' => 'FDToken',
