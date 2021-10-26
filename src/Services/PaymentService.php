@@ -94,7 +94,7 @@ class PaymentService
             '3DS'              => [
                 'type'                            => 'D',
                 'program_protocol'                => '2',
-                'directory_server_transaction_id' => $this->order['directory_server_transaction_id'],
+                'directory_server_transaction_id' => $this->order['ds_transaction_id'] ?? '',
                 'cardholder_name'                 => $this->order['card']['cardHolderName'],
                 'exp_date'                        => $this->order['card']['exp_date'],
                 'cavv'                            => $this->order['3ds']['ExtendedData']['CAVV'] ?? ''
