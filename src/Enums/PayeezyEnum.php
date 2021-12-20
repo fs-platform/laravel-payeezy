@@ -29,6 +29,8 @@ class PayeezyEnum
         'gateway_93'          => 'System error. Please try another payment method or contact your account manager.',
         'bank_260'            => 'Service is temporarily unavailable due to network error. Please try later or contact your account manager.',
         'bank_301'            => 'Service is temporarily unavailable due to network error. Please try later or contact your account manager.',
+        'bank_302'            => 'Your credit card balance is insufficient. Please try another card.',
+        'bank_303'            => 'Generic decline – No other information is being provided by the Issuer.You can contact your card issuing bank or PP customer service to get the specific reason for the transaction failure.',
         'bank_304'            => 'Account is not found. Please check the information or contact the issuing bank.',
         'bank_401'            => 'Issuer wants voice contact with cardholder. Please call your issuing bank.',
         'bank_502'            => 'Card is reported as lost/stolen. Please contact your issuing bank. Note: Does not apply to American Express.',
@@ -43,6 +45,7 @@ class PayeezyEnum
         'bank_591'            => 'Issuer error. Please contact the issuing bank or try another card.',
         'bank_592'            => 'Issuer error. Please contact the issuing bank or try another card.',
         'bank_594'            => 'Issuer error. Please contact the issuing bank or try another card.',
+        'bank_596'            => 'The transaction was rejected due to risk control by the credit card company.It is recommended that you temporarily stop payment to avoid violating the new risk control regulations and try another card or payment method.',
         'bank_776'            => 'Duplicate Transaction. Please contact your account manager to confirm the transaction status.',
         'bank_787'            => 'Transaction is declined due to high risk. Please try another payment method.',
         'bank_806'            => 'Your card has been restricted. Please try another card or payment method.',
@@ -58,5 +61,8 @@ class PayeezyEnum
         'bank_755'            => 'Account is not found. Please check the information or contact the issuing bank.',
         'bank_758'            => 'Account is frozen. Please contact your issuing bank or try another payment method.',
         'bank_834'            => 'Card is not supported. Please try another card or payment method.',
+        'bank_100'            => 'Billing address does not match the one reserved in your account. Please make sure that these two addresses are exactly the same, or choose another payment method.',
+        'bank_504'            => 'Timeout. It is an internal error. Please check your internal server.',
+        'bank_614'            => 'The transaction was rejected due to risk control by the credit card company.It is recommended that you temporarily stop payment to avoid violating the new risk control regulations and try another card or payment method.'
     ];
 }

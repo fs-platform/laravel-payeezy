@@ -334,19 +334,15 @@ class PaymentService
             if (isset($result['Error'])){
                 $message = $result['Error']['message'] ?? '';
             } else {
-                //判断是否存在bank_resp_code返回的参数,由于存在特殊的情况，导致bank_resp_code不存在
-                if (isset($result['bank_resp_code']) && !empty($result['bank_resp_code'])) {
-                    if (!in_array(intval($result['bank_resp_code']),PayeezyEnum::BANK_SUCCESS_STATUS)){
-                        $message = PayeezyEnum::ERROR['bank_'.$result['bank_resp_code']] ?? $result['bank_message'];
-                    }
-
-                    if ($result['bank_message'] != 'Approved'){
-                        $message = PayeezyEnum::ERROR['bank_'.$result['bank_resp_code']] ?? $result['bank_message'];
-                    }
+                if (isset($result['gateway_resp_code']) && $result['gateway_resp_code'] != '00') {
+                    $message = PayeezyEnum::ERROR['gateway_'.$result['gateway_resp_code']] ?? $result['gateway_message'];
                 }
 
-                if ($result['gateway_resp_code'] != '00'){
-                    $message = PayeezyEnum::ERROR['gateway_'.$result['gateway_resp_code']] ?? $result['gateway_message'];
+                //判断是否存在bank_resp_code返回的参数,由于存在特殊的情况，导致bank_resp_code不存在
+                if (isset($result['bank_resp_code']) && !empty($result['bank_resp_code'])) {
+                    if (!in_array(intval($result['bank_resp_code']),PayeezyEnum::BANK_SUCCESS_STATUS) || $result['bank_message'] != 'Approved'){
+                        $message = PayeezyEnum::ERROR['bank_'.$result['bank_resp_code']] ?? $result['bank_message'];
+                    }
                 }
             }
 
